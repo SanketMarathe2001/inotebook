@@ -4,9 +4,12 @@ const User = require('../models/User');
 const { body, validationResult } = require('express-validator');
 var bcrypt = require('bcryptjs');
 var jwt = require('jsonwebtoken');
+var fetchuser = require('../middleware/fetchuser');
+
 
 const JWT_SECRET = "Sanketisagoodb$oy";
 
+//route 1 :create user
 router.post('/createuser',[
     body('name').isLength({ min: 3 }),
     body('email').isEmail(),
@@ -49,6 +52,7 @@ router.post('/createuser',[
     }
 })
 
+//Route 2: login
 router.post('/login',[
   body('email','Enter a valid email').isEmail(),
   body('password','Password cannot be blank').exists()
@@ -82,6 +86,19 @@ router.post('/login',[
   catch(error){
     console.error(error.message);
     res.status(500).send("Some Error Occur");
+  }
+})
+
+//route 3: login user detials
+router.post('/getuser', fetchuser,  async (req, res) => {
+
+  try {
+    const userId = req.user.id;
+    const user = await User.findById(userId).select("-password");
+    res.send(user)
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send("Internal Server Error");
   }
 })
 module.exports = router
