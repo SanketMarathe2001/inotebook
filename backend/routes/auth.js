@@ -15,14 +15,15 @@ router.post('/createuser',[
     body('email').isEmail(),
     body('password').isLength({ min: 5 }),
 ], async(req,res)=>{
+    let success = false;
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ success, errors: errors.array() });
     }
     try{
     let user = await User.findOne({email: req.body.email});
     if(user){
-      return res.status(400).json({error: "Sorry a user with this email already exists."});
+      return res.status(400).json({success, error: "Sorry a user with this email already exists."});
     }
     const salt  = await bcrypt.genSalt(10);
     const secPass = await bcrypt.hash(req.body.password,salt);
@@ -44,7 +45,8 @@ router.post('/createuser',[
       //.then(user => res.json(user))
       //.catch (err=> {console.log(err)
     //res.json({error : "Enter unique email id."})});
-    res.json({authToken});
+    success=true;
+    res.json({success, authToken});
     }
     catch(error){
       console.error(error.message);
